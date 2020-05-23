@@ -1,13 +1,165 @@
 class RenderObject
 {
-    constructor (texture)
+    constructor (gl, programInfo)
     {
+        this.gl = gl;
         this.vertexNum = 0;
         this.faceNum = 0;
-        this.positions = [];
-        this.texcoord = [];
-        this.indices = [];
-        this.texture = texture;
+        this.positions = [
+            -1.0, -1.0,
+            1.0, -1.0,
+            -1.0, 1.0,
+            1.0, 1.0,
+        ];
+        this.texcoord = [
+            0.0, 1.0,
+            1.0, 1.0,
+            0.0, 0.0,
+            1.0, 0.0,
+        ];
+        this.indices = [
+            0, 1, 2,
+            1, 2, 3,
+        ];
+        this.programInfo = programInfo;
+        this.texture = null;
+        this.buffers = this.initBuffers(gl);
+        //this.updateBuffers();
+    }
+
+    initBuffers()
+    {
+        const gl = this.gl;
+
+        const positions = this.positions;
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(1024), gl.STATIC_DRAW);
+
+        const textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+
+        const textureCoordinates = this.texcoord;
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(1024), gl.STATIC_DRAW);
+
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        
+        const indices = this.indices;
+
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(1024), gl.STATIC_DRAW);
+
+        return {
+            position: positionBuffer,
+            textureCoord: textureCoordBuffer,
+            indices: indexBuffer,
+        };
+    }
+    updateBuffers ()
+    {
+        const gl = this.gl;
+        const positions = this.positions;
+        const textureCoordinates = this.texcoord;
+        const indices = this.indices;
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(positions));
+
+        const textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(textureCoordinates));
+
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Uint16Array(indices));
+    }
+
+    render (transform, scale, rotation)
+    {
+        if (this.texture === null)
+        {
+            console.log("No texture!!!");
+            return;
+        }
+        const gl = this.gl;
+        const programInfo = this.programInfo;
+        const buffers = this.buffers;
+        const texture = this.texture;
+
+        const transformVector = new Float32Array(transform);
+        const scaleMatrix = mat4.createScale(scale);
+        const rotationMatrix = mat4.createRotation(rotation);
+
+        {
+            const numComponents = 2;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.vertexPosition,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+        }
+
+        {
+            const numComponents = 2;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.textureCoord,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
+        }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+
+        gl.useProgram(programInfo.program);
+
+        gl.uniform4fv(
+            programInfo.uniformLocations.transformVector,
+            transformVector
+        );
+        gl.uniformMatrix4fv(
+            programInfo.uniformLocations.scaleMatrix,
+            false,
+            scaleMatrix
+        );
+        gl.uniformMatrix4fv(
+            programInfo.uniformLocations.rotationMatrix,
+            false,
+            rotationMatrix
+        );
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+
+        {
+            const vertexCount = 6;
+            const type = gl.UNSIGNED_SHORT;
+            const offset = 0;
+            gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+        }
     }
 
     addVertex (vPos, tCoord)
@@ -42,6 +194,7 @@ class RenderObject
 
         const image = new Image();
         image.onload = function() {
+            console.log("image loaded");
             function isPowerOf2(value) {
                 return (value & (value - 1)) == 0;
             }
@@ -74,5 +227,9 @@ class RenderObject
         image.src = url;
 
         return texture;
+    }
+    bindTexture(texture)
+    {
+        this.texture = texture;
     }
 }

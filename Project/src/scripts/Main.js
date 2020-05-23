@@ -6,11 +6,15 @@ class Main
             attribute vec4 aVertexPosition;
             attribute vec2 aTextureCoord;
 
+            uniform vec4 uTransformVector;
             uniform mat4 uScaleMatrix;
+            uniform mat4 uRotationMatrix;
+            
 
             varying highp vec2 vTextureCoord;
             void main() {
-                gl_Position = uScaleMatrix * aVertexPosition;
+                //gl_Position = uRotationMatrix * uScaleMatrix * (uTransformVector + aVertexPosition);
+                gl_Position = aVertexPosition;
                 vTextureCoord = aTextureCoord;
             }
         `;
@@ -42,18 +46,19 @@ class Main
                 textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
             },
             uniformLocations: {
+                transformVector: gl.getUniformLocation(shaderProgram, 'uTransformVector'),
                 scaleMatrix: gl.getUniformLocation(shaderProgram, 'uScaleMatrix'),
+                rotationMtrix: gl.getUniformLocation(shaderProgram, 'uRotationMatrix'),
                 uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
             },
         };
-
-        let buf = this.initBuffers(gl);
-        const texture = RenderObject.loadTexture(gl, '../textures/background_00.jpg');
+        const obj = new RenderObject(gl, programInfo);
+        const texture = RenderObject.loadTexture(gl, '../textures/skybox.png');
+        obj.bindTexture(texture);
 
         this.gl = gl;
         this.programInfo = programInfo;
-        this.buffers = buf;
-        this.texture = texture;
+        this.obj = obj;
         this.then = 0;
 
         requestAnimationFrame(this.render.bind(this));
@@ -70,50 +75,6 @@ class Main
         requestAnimationFrame(this.render.bind(this));
     }
 
-    initBuffers(gl)
-    {
-        const positions = [
-            -1.0, -1.0,
-            1.0, -1.0,
-            -1.0, 1.0,
-            1.0, 1.0,
-        ];
-
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-        const textureCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-
-        const textureCoordinates = [
-            0.0, 1.0,
-            1.0, 1.0,
-            0.0, 0.0,
-            1.0, 0.0,
-        ];
-
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
-
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        const indices = [
-            0, 1, 2,
-            1, 2, 3,
-        ];
-
-        // Now send the element array to GL
-
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,
-            new Uint16Array(indices), gl.STATIC_DRAW);
-
-        return {
-            position: positionBuffer,
-            textureCoord: textureCoordBuffer,
-            indices: indexBuffer,
-        };
-    }
-
     drawScene(gl, programInfo, buffers, texture, deltaTime)
     {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -123,66 +84,7 @@ class Main
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        const scaleMatrix = mat4.createId();
-
-        {
-            const numComponents = 2;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-            gl.vertexAttribPointer(
-                programInfo.attribLocations.vertexPosition,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset
-            );
-            gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-        }
-
-        {
-            const numComponents = 2;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
-            gl.vertexAttribPointer(
-                programInfo.attribLocations.textureCoord,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset
-            );
-            gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
-        }
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
-
-        gl.useProgram(programInfo.program);
-
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.scaleMatrix,
-            false,
-            scaleMatrix
-        );
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
-
-        {
-            const vertexCount = 6;
-            const type = gl.UNSIGNED_SHORT;
-            const offset = 0;
-            gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-        }
+        this.obj.render([0.0, 0.0, 0.0, 0.0,], [1.0, 1.0, 1.0, 1.0], 0);
     }
 
     initShaderProgram(gl, vsSource, fsSource) {

@@ -1,10 +1,6 @@
-class Mat4
+class mat4
 {
-    constructor()
-    {
-
-    }
-    createZero ()
+    static createZero ()
     {
         const ret = [
                         0.0, 0.0, 0.0, 0.0,
@@ -14,7 +10,27 @@ class Mat4
                     ];
         return ret;
     }
-    createId ()
+    static createId ()
+    {
+        const ret = [
+                        1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0,
+                    ];
+        return ret;
+    }
+    static createScale (s)
+    {
+        const ret = [
+                        s[0], 0.0, 0.0, 0.0,
+                        0.0, s[1], 0.0, 0.0,
+                        0.0, 0.0, s[2], 0.0,
+                        0.0, 0.0, 0.0, s[3],
+                    ];
+        return ret;
+    }
+    static createRotation (t)
     {
         const ret = [
                         1.0, 0.0, 0.0, 0.0,
