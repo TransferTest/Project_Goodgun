@@ -8,7 +8,7 @@ class Camera
         this.screen_height = 1.0;
         this.position = vec4.createZero();
         this.rotation = 0.0;
-        this.zoom = 1.0;
+        this.depth = 1.0;
         this.skybox = null;
     }
 
@@ -19,6 +19,22 @@ class Camera
     setScreenHeight(h)
     {
         this.screen_height = h;
+    }
+    getDepth()
+    {
+        return this.depth;
+    }
+    getPosition()
+    {
+        return this.position;
+    }
+    setPosition(pos)
+    {
+        this.position = pos;
+    }
+    translate(v)
+    {
+        this.position = vec4.add(this.position, v);
     }
 
     screenCoord2GlobalCoord(pos)

@@ -2,6 +2,7 @@ class Layer
 {
     constructor ()
     {
+        this.depth = 1.0;
         this.position = vec4.createZero();
         this.rotation = 0.0;
         this.scale = [1.0, 1.0, 1.0, 1.0];
@@ -10,6 +11,10 @@ class Layer
     addObject(obj)
     {
         this.objects.push(obj);
+    }
+    setDepth(d)
+    {
+        this.depth = d;
     }
     render(cam)
     {
@@ -20,7 +25,7 @@ class Layer
 
         for (let i = 0; i < objects.length; i++)
         {
-            objects[i].render(cam, position, scale, rotation);
+            objects[i].render(cam, position, scale, rotation, this.depth);
         }
     }
 }

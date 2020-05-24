@@ -13,7 +13,7 @@ class Main
 
             varying highp vec2 vTextureCoord;
             void main() {
-                gl_Position = uRotationMatrix * uScaleMatrix * (uTransformVector + aVertexPosition);
+                gl_Position = uTransformVector + (uRotationMatrix * uScaleMatrix * aVertexPosition);
                 vTextureCoord = aTextureCoord;
             }
         `;
@@ -21,8 +21,9 @@ class Main
         const fsSource = `
             varying highp vec2 vTextureCoord;
             uniform sampler2D uSampler;
+
             void main() {
-                gl_FragColor = texture2D(uSampler, vTextureCoord);
+                gl_FragColor = vec4(texture2D(uSampler, vTextureCoord).rgb, texture2D(uSampler, vTextureCoord).a);
             }
         `;
 
@@ -56,22 +57,47 @@ class Main
         cam.setScreenHeight(canvas.height);
         console.log(canvas.width);
         cam.setSkyBox('src/textures/skybox.png');
+        cam.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
         this.cam = cam;
 
         const layers = [];
         const layer_00 = new Layer();
-        layers.push(layer_00);
-
+        layer_00.setDepth(1.0);
         const mapobj = new GameObject();
         mapobj.setRenderObjectUrl(gl, programInfo, 'src/textures/map.png');
-        mapobj.setScale([960.0, 640.0, 1.0, 1.0]);
+        mapobj.setScale([3840.0, 2560.0, 1.0, 1.0]);
         layer_00.addObject(mapobj);
+
+        const layer_01 = new Layer();
+        layer_01.setDepth(5.0);
+        const backobj_1 = new GameObject();
+        backobj_1.setRenderObjectUrl(gl, programInfo, 'src/textures/background_01.png');
+        backobj_1.setScale([1440.0, 960.0, 1.0, 1.0]);
+        layer_01.addObject(backobj_1);
+
+        const layer_02 = new Layer();
+        layer_02.setDepth(10.0);
+        const backobj_2 = new GameObject();
+        backobj_2.setRenderObjectUrl(gl, programInfo, 'src/textures/background_02.png');
+        backobj_2.setScale([1440.0, 960.0, 1.0, 1.0]);
+        layer_02.addObject(backobj_2);
+
+        layers.push(layer_02);
+        layers.push(layer_01);
+        layers.push(layer_00);
         
 
         this.gl = gl;
         this.programInfo = programInfo;
         this.layers = layers;
         this.then = 0;
+
+        window.addEventListener('keydown', this.keyDownHandler.bind(this), false);
+        window.addEventListener('keyup', this.keyUpHandler.bind(this), false);
+        this.keypressed_up = false;
+        this.keypressed_down = false;
+        this.keypressed_right = false;
+        this.keypressed_left = false;
 
         requestAnimationFrame(this.render.bind(this));
     }
@@ -82,18 +108,36 @@ class Main
         const deltaTime = now - this.then;
         this.then = now;
 
-        this.drawScene(this.gl, deltaTime);
+        const v = 300.0 * deltaTime;
+        if (this.keypressed_up)
+        {
+            this.cam.translate([0.0, v, 0.0, 0.0]);
+        }
+        if (this.keypressed_down)
+        {
+            this.cam.translate([0.0, -v, 0.0, 0.0]);
+        }
+        if (this.keypressed_right)
+        {
+            this.cam.translate([v, 0.0, 0.0, 0.0]);
+        }
+        if (this.keypressed_left)
+        {
+            this.cam.translate([-v, 0.0, 0.0, 0.0]);
+        }
+
+        this.drawScene(this.gl);
 
         requestAnimationFrame(this.render.bind(this));
     }
 
-    drawScene(gl, deltaTime)
+    drawScene(gl)
     {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clearDepth(1.0);
-        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
-        gl.depthFunc(gl.LEQUAL);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -135,5 +179,44 @@ class Main
         }
 
         return shader;
+    }
+
+    keyDownHandler(e)
+    {
+        if (e.keyCode == 87)
+        {
+            this.keypressed_up = true;
+        }
+        else if (e.keyCode == 83)
+        {
+            this.keypressed_down = true;
+        }
+        else if (e.keyCode == 68)
+        {
+            this.keypressed_right = true;
+        }
+        else if (e.keyCode == 65)
+        {
+            this.keypressed_left = true;
+        }
+    }
+    keyUpHandler(e)
+    {
+        if (e.keyCode == 87)
+        {
+            this.keypressed_up = false;
+        }
+        else if (e.keyCode == 83)
+        {
+            this.keypressed_down = false;
+        }
+        else if (e.keyCode == 68)
+        {
+            this.keypressed_right = false;
+        }
+        else if (e.keyCode == 65)
+        {
+            this.keypressed_left = false;
+        }
     }
 }
