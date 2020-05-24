@@ -35,21 +35,21 @@ class RenderObject
 
         const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(1024), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
         const textureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
 
         const textureCoordinates = this.texcoord;
 
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(1024), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
         const indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         
         const indices = this.indices;
 
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(1024), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
         return {
             position: positionBuffer,
@@ -63,18 +63,19 @@ class RenderObject
         const positions = this.positions;
         const textureCoordinates = this.texcoord;
         const indices = this.indices;
+        const buffers = this.buffers;
+        const positionBuffer = buffers.position;
+        const textureCoordBuffer = buffers.textureCoord;
+        const indexBuffer = buffers.indices;
 
-        const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(positions));
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-        const textureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(textureCoordinates));
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
-        const indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Uint16Array(indices));
+        gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     }
 
     render (transform, scale, rotation)
@@ -88,6 +89,7 @@ class RenderObject
         const programInfo = this.programInfo;
         const buffers = this.buffers;
         const texture = this.texture;
+        
 
         const transformVector = new Float32Array(transform);
         const scaleMatrix = mat4.createScale(scale);
@@ -189,6 +191,7 @@ class RenderObject
 
     static loadTexture (gl, url)
     {
+        console.log("load function called with : " + url);
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 

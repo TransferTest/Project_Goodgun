@@ -53,7 +53,7 @@ class Main
             },
         };
         const obj = new RenderObject(gl, programInfo);
-        const texture = RenderObject.loadTexture(gl, '../textures/skybox.png');
+        const texture = RenderObject.loadTexture(gl, 'src/textures/skybox.png');
         obj.bindTexture(texture);
 
         this.gl = gl;
