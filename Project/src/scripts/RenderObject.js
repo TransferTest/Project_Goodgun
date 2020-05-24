@@ -24,7 +24,6 @@ class RenderObject
         this.programInfo = programInfo;
         this.texture = null;
         this.buffers = this.initBuffers(gl);
-        //this.updateBuffers();
     }
 
     initBuffers()
@@ -39,17 +38,13 @@ class RenderObject
 
         const textureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-
         const textureCoordinates = this.texcoord;
-
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
         const indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        
-        const indices = this.indices;
-
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        const ind = this.indices;
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ind), gl.STATIC_DRAW);
 
         return {
             position: positionBuffer,
@@ -74,8 +69,8 @@ class RenderObject
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        //gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
+        //gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     }
 
     render (transform, scale, rotation)
@@ -85,13 +80,14 @@ class RenderObject
             console.log("No texture!!!");
             return;
         }
+        this.updateBuffers();
         const gl = this.gl;
         const programInfo = this.programInfo;
         const buffers = this.buffers;
         const texture = this.texture;
         
 
-        const transformVector = new Float32Array(transform);
+        const transformVector = transform;
         const scaleMatrix = mat4.createScale(scale);
         const rotationMatrix = mat4.createRotation(rotation);
 

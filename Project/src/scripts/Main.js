@@ -13,8 +13,7 @@ class Main
 
             varying highp vec2 vTextureCoord;
             void main() {
-                //gl_Position = uRotationMatrix * uScaleMatrix * (uTransformVector + aVertexPosition);
-                gl_Position = aVertexPosition;
+                gl_Position = uRotationMatrix * uScaleMatrix * (uTransformVector + aVertexPosition);
                 vTextureCoord = aTextureCoord;
             }
         `;
@@ -48,17 +47,30 @@ class Main
             uniformLocations: {
                 transformVector: gl.getUniformLocation(shaderProgram, 'uTransformVector'),
                 scaleMatrix: gl.getUniformLocation(shaderProgram, 'uScaleMatrix'),
-                rotationMtrix: gl.getUniformLocation(shaderProgram, 'uRotationMatrix'),
+                rotationMatrix: gl.getUniformLocation(shaderProgram, 'uRotationMatrix'),
                 uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
             },
         };
-        const obj = new RenderObject(gl, programInfo);
-        const texture = RenderObject.loadTexture(gl, 'src/textures/skybox.png');
-        obj.bindTexture(texture);
+        const cam = new Camera(gl, programInfo);
+        cam.setScreenWidth(canvas.width);
+        cam.setScreenHeight(canvas.height);
+        console.log(canvas.width);
+        cam.setSkyBox('src/textures/skybox.png');
+        this.cam = cam;
+
+        const layers = [];
+        const layer_00 = new Layer();
+        layers.push(layer_00);
+
+        const mapobj = new GameObject();
+        mapobj.setRenderObjectUrl(gl, programInfo, 'src/textures/map.png');
+        mapobj.setScale([960.0, 640.0, 1.0, 1.0]);
+        layer_00.addObject(mapobj);
+        
 
         this.gl = gl;
         this.programInfo = programInfo;
-        this.obj = obj;
+        this.layers = layers;
         this.then = 0;
 
         requestAnimationFrame(this.render.bind(this));
@@ -70,21 +82,26 @@ class Main
         const deltaTime = now - this.then;
         this.then = now;
 
-        this.drawScene(this.gl, this.programInfo, this.buffers, this.texture, deltaTime);
+        this.drawScene(this.gl, deltaTime);
 
         requestAnimationFrame(this.render.bind(this));
     }
 
-    drawScene(gl, programInfo, buffers, texture, deltaTime)
+    drawScene(gl, deltaTime)
     {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clearDepth(1.0);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
         gl.depthFunc(gl.LEQUAL);
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this.obj.render([0.0, 0.0, 0.0, 0.0,], [1.0, 1.0, 1.0, 1.0], 0);
+        this.cam.renderSky();
+        for (let i = 0; i < this.layers.length; i++)
+        {
+            this.layers[i].render(this.cam);
+        }
     }
 
     initShaderProgram(gl, vsSource, fsSource) {

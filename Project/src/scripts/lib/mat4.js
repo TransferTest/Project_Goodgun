@@ -33,8 +33,8 @@ class mat4
     static createRotation (t)
     {
         const ret = [
-                        1.0, 0.0, 0.0, 0.0,
-                        0.0, 1.0, 0.0, 0.0,
+                        Math.cos(t), -Math.sin(t), 0.0, 0.0,
+                        Math.sin(t), Math.cos(t), 0.0, 0.0,
                         0.0, 0.0, 1.0, 0.0,
                         0.0, 0.0, 0.0, 1.0,
                     ];
