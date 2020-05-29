@@ -7,6 +7,11 @@ class GameObject
         this.scale = [1.0, 1.0, 1.0, 1.0];
         this.renderobj = null;
         this.depth = 0.0;
+        this.collider = null;
+    }
+    setCollider (col)
+    {
+        this.collider = col;
     }
     setRenderObject (rndobj)
     {
@@ -16,13 +21,25 @@ class GameObject
     {
         this.position = pos;
     }
+    getPosition()
+    {
+        return this.position;
+    }
     setRotation(rot)
     {
         this.rotation = rot;
     }
+    getRotation()
+    {
+        return this.rotation;
+    }
     setScale(scl)
     {
         this.scale = scl;
+    }
+    getScale()
+    {
+        return this.scale;
     }
     setDepth(d)
     {

@@ -10,6 +10,20 @@ class Camera
         this.rotation = 0.0;
         this.depth = 1.0;
         this.skybox = null;
+        this.follow = null;
+
+        this.bound_left = 0.0;
+        this.bound_right = 0.0;
+        this.bound_top = 0.0;
+        this.bound_bottom = 0.0;
+    }
+
+    setBound (bnd)
+    {
+        this.bound_left = bnd[0];
+        this.bound_right = bnd[1];
+        this.bound_bottom = bnd[2];
+        this.bound_top = bnd[3];
     }
 
     setScreenWidth(w)
@@ -81,5 +95,39 @@ class Camera
     renderSky()
     {
         this.render(this.skybox);
+    }
+    setFollow(obj)
+    {
+        this.follow = obj;
+    }
+    updatePosition ()
+    {
+        if (this.follow === null)
+        {
+            return;
+        }
+        const fpos = this.follow.getPosition();
+        const pos = vec4.createZero();
+        pos[0] = fpos[0];
+        pos[1] = fpos[1];
+        pos[2] = fpos[2];
+        pos[3] = fpos[3];
+        if (pos[0] < this.bound_left)
+        {
+            pos[0] = this.bound_left;
+        }
+        if (pos[0] > this.bound_right)
+        {
+            pos[0] = this.bound_right;
+        }
+        if (pos[1] > this.bound_top)
+        {
+            pos[1] = this.bound_top;
+        }
+        if (pos[1] < this.bound_bottom)
+        {
+            pos[1] = this.bound_bottom;
+        }
+        this.setPosition(pos);
     }
 }

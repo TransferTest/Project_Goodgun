@@ -55,9 +55,9 @@ class Main
         const cam = new Camera(gl, programInfo);
         cam.setScreenWidth(canvas.width);
         cam.setScreenHeight(canvas.height);
-        console.log(canvas.width);
         cam.setSkyBox('src/textures/skybox.png');
         cam.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
+        cam.setBound([-2480.0, 2480.0, -1520.0, 1260.0]);
         this.cam = cam;
 
         const layers = [];
@@ -85,11 +85,19 @@ class Main
         layers.push(layer_02);
         layers.push(layer_01);
         layers.push(layer_00);
+
+        const player = new Transform();
+        player.setRenderObjectUrl(gl, programInfo, 'src/textures/yee.png');
+        player.setScale([40.0, 60.0, 1.0, 1.0]);
+        player.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
+        layer_00.addObject(player);
+        cam.setFollow(player);
         
 
         this.gl = gl;
         this.programInfo = programInfo;
         this.layers = layers;
+        this.player = player;
         this.then = 0;
 
         window.addEventListener('keydown', this.keyDownHandler.bind(this), false);
@@ -108,24 +116,27 @@ class Main
         const deltaTime = now - this.then;
         this.then = now;
 
-        const v = 300.0 * deltaTime;
+        const v = 300.0;
+        const velocity = vec4.createZero();
         if (this.keypressed_up)
         {
-            this.cam.translate([0.0, v, 0.0, 0.0]);
+            velocity[1] += v;
         }
         if (this.keypressed_down)
         {
-            this.cam.translate([0.0, -v, 0.0, 0.0]);
+            velocity[1] += -v;
         }
         if (this.keypressed_right)
         {
-            this.cam.translate([v, 0.0, 0.0, 0.0]);
+            velocity[0] += v;
         }
         if (this.keypressed_left)
         {
-            this.cam.translate([-v, 0.0, 0.0, 0.0]);
+            velocity[0] += -v;
         }
 
+        this.player.setVelocity(velocity);
+        this.player.update(deltaTime);
         this.drawScene(this.gl);
 
         requestAnimationFrame(this.render.bind(this));
@@ -141,6 +152,7 @@ class Main
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        this.cam.updatePosition();
         this.cam.renderSky();
         for (let i = 0; i < this.layers.length; i++)
         {
