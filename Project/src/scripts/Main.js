@@ -71,15 +71,17 @@ class Main
         const layer_01 = new Layer();
         layer_01.setDepth(5.0);
         const backobj_1 = new GameObject();
-        backobj_1.setRenderObjectUrl(gl, programInfo, 'src/textures/background_01.png');
+        backobj_1.setRenderObjectUrl(gl, programInfo, 'src/textures/background_02.png');
         backobj_1.setScale([1440.0, 960.0, 1.0, 1.0]);
+        backobj_1.setPosition([0.0, -2320.0, 0.0, 0.0]);
         layer_01.addObject(backobj_1);
 
         const layer_02 = new Layer();
         layer_02.setDepth(10.0);
         const backobj_2 = new GameObject();
-        backobj_2.setRenderObjectUrl(gl, programInfo, 'src/textures/background_02.png');
+        backobj_2.setRenderObjectUrl(gl, programInfo, 'src/textures/background_01.png');
         backobj_2.setScale([1440.0, 960.0, 1.0, 1.0]);
+        backobj_2.setPosition([0.0, 960.0, 0.0, 0.0]);
         layer_02.addObject(backobj_2);
 
         layers.push(layer_02);
