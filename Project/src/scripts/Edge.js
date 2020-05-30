@@ -8,7 +8,7 @@ class Edge
     }
     isHorizontal()
     {
-        return dir;
+        return this.dir;
     }
     isIn(v, tolerance)
     {
@@ -20,7 +20,28 @@ class Edge
         const y2 = this.v2[1];
         const t = tolerance;
 
-        const det = (y2 - y1) * (x - x1 - t) - (x2 - x1) * (y - y1 + t);
+        var tx = t;
+        var ty = t;
+
+        if (y2 - y1 > 0)
+        {
+            tx = -t;
+        }
+        if (x2 - x1 > 0)
+        {
+            ty = -t;
+        }
+
+        if (this.isHorizontal())
+        {
+            tx = 0.0;
+        }
+        else
+        {
+            ty = 0.0;
+        }
+
+        const det = (y2 - y1) * (x - x1 - tx) - (x2 - x1) * (y - y1 + ty);
         return (det < 0);
     }
     getV1 ()
@@ -31,33 +52,13 @@ class Edge
     {
         return this.v2;
     }
-    static fit(b1, b2, v)
-    {
-        let ret = v;
-        let min = b1;
-        let max = b2;
-        if (b1 > b2)
-        {
-            min = b2;
-            max = b1;
-        }
-        if (ret > max)
-        {
-            ret = max;
-        }
-        if (ret < min)
-        {
-            ret = min;
-        }
-        return ret;
-    }
     static intersect (e1, e2)
     {
-        if (e1.isIn(e2.getV1()) == e1.isIn(e2.getV2()))
+        if (e1.isIn(e2.getV1(), 0.0) == e1.isIn(e2.getV2(), 0.0))
         {
             return false;
         }
-        if (e2.isIn(e1.getV1()) == e2.isIn(e1.getV2()))
+        if (e2.isIn(e1.getV1(), 0.0) == e2.isIn(e1.getV2(), 0.0))
         {
             return false;
         }

@@ -92,12 +92,26 @@ class Main
         player.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
         layer_00.addObject(player);
         cam.setFollow(player);
+
+        const playerCol = new RectCollider(player);
+        player.setCollider(playerCol);
+
+        const terrain = new Terrain();
+        terrain.addEdge(new Edge([-994.0, -2560.0], [-994.0, -1594.0], false));
+        terrain.addEdge(new Edge([-994.0, -1594.0], [-1304.0, -1594.0], true));
+        terrain.addEdge(new Edge([-1304.0, -1549.0], [-1304.0, -1844.0], false));
+        terrain.addEdge(new Edge([-1304.0, -1844.0], [-2208.0, -1844.0], true));
+        terrain.addEdge(new Edge([-2208.0 - 13.0, -1844.0 - 9.0], [-2676.0, -1520.0], true));
+        terrain.addEdge(new Edge([-2676.0, -1520.0], [-3260.0, -1520.0], true));
+        terrain.addEdge(new Edge([-3260.0, -1520.0], [-3260.0, 1510.0], false));
+        terrain.addEdge(new Edge([-3260.0, 1510.0], [-3840.0, 1510.0], true));
         
 
         this.gl = gl;
         this.programInfo = programInfo;
         this.layers = layers;
         this.player = player;
+        this.terrain = terrain;
         this.then = 0;
 
         window.addEventListener('keydown', this.keyDownHandler.bind(this), false);
@@ -106,6 +120,13 @@ class Main
         this.keypressed_down = false;
         this.keypressed_right = false;
         this.keypressed_left = false;
+        this.keypressed_jump = false;
+        this.start_jump = 0.0;
+        this.max_jump_duration = 0.35;
+        this.jump_speed = 675.0;
+
+        this.gravity = -1200.0;
+        this.player_walk_speed = 500.0;
 
         requestAnimationFrame(this.render.bind(this));
     }
@@ -116,15 +137,17 @@ class Main
         const deltaTime = now - this.then;
         this.then = now;
 
-        const v = 300.0;
+        const v = this.player_walk_speed;
+        const g = [0.0, this.gravity, 0.0, 0.0];
         const velocity = vec4.createZero();
+        
         if (this.keypressed_up)
         {
-            velocity[1] += v;
+            //velocity[1] += v;
         }
         if (this.keypressed_down)
         {
-            velocity[1] += -v;
+            //velocity[1] += -v;
         }
         if (this.keypressed_right)
         {
@@ -134,9 +157,19 @@ class Main
         {
             velocity[0] += -v;
         }
-
+        velocity[1] = this.player.getVelocity()[1];
+        if (this.keypressed_jump)
+        {
+            if (this.start_jump < this.max_jump_duration)
+            {
+                this.start_jump += deltaTime;
+                velocity[1] = this.jump_speed;
+            }
+        }
         this.player.setVelocity(velocity);
+        this.player.accelerate(g, deltaTime);
         this.player.update(deltaTime);
+        this.terrain.checkCollision(this.player.getCollider());
         this.drawScene(this.gl);
 
         requestAnimationFrame(this.render.bind(this));
@@ -211,6 +244,14 @@ class Main
         {
             this.keypressed_left = true;
         }
+        else if (e.keyCode == 32)
+        {
+            if (!this.keypressed_jump)
+            {
+                this.start_jump = 0.0;
+            }
+            this.keypressed_jump = true;
+        }
     }
     keyUpHandler(e)
     {
@@ -229,6 +270,10 @@ class Main
         else if (e.keyCode == 65)
         {
             this.keypressed_left = false;
+        }
+        else if (e.keyCode == 32)
+        {
+            this.keypressed_jump = false;
         }
     }
 }

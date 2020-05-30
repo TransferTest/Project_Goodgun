@@ -13,6 +13,10 @@ class GameObject
     {
         this.collider = col;
     }
+    getCollider()
+    {
+        return this.collider;
+    }
     setRenderObject (rndobj)
     {
         this.renderobj = rndobj;
@@ -20,6 +24,14 @@ class GameObject
     setPosition(pos)
     {
         this.position = pos;
+    }
+    setPositionX(x)
+    {
+        this.position[0] = x;
+    }
+    setPositionY(y)
+    {
+        this.position[1] = y;
     }
     getPosition()
     {

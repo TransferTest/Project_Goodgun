@@ -22,12 +22,16 @@ class Transform extends GameObject
     {
         return this.velocity;
     }
-    accelerate (a)
+    accelerate (a, dt)
     {
-        this.velocity = vec4.add(this.velocity, a);
+        this.velocity = vec4.add(this.velocity, vec4.smul(a, dt));
     }
     update (dt)
     {
         this.translate(vec4.smul(this.velocity, dt));
+    }
+    onGround()
+    {
+        this.velocity[1] = 0.0;
     }
 }
