@@ -24,7 +24,7 @@ class Transform extends GameObject
     }
     accelerate (a, dt)
     {
-        this.velocity = vec4.add(this.velocity, vec4.smul(a, dt));
+        this.setVelocity(vec4.add(this.velocity, vec4.smul(a, dt)));
     }
     update (dt)
     {

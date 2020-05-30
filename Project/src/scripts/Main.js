@@ -101,11 +101,25 @@ class Main
         terrain.addEdge(new Edge([-994.0, -1594.0], [-1304.0, -1594.0], true));
         terrain.addEdge(new Edge([-1304.0, -1549.0], [-1304.0, -1844.0], false));
         terrain.addEdge(new Edge([-1304.0, -1844.0], [-2208.0, -1844.0], true));
-        terrain.addEdge(new Edge([-2208.0 - 13.0, -1844.0 - 9.0], [-2676.0, -1520.0], true));
+        terrain.addEdge(new Edge([-2208.0 - 13.0, -1844.0 - 9.0], [-2676.0, -1520.0], true)); // slide
         terrain.addEdge(new Edge([-2676.0, -1520.0], [-3260.0, -1520.0], true));
         terrain.addEdge(new Edge([-3260.0, -1520.0], [-3260.0, 1510.0], false));
         terrain.addEdge(new Edge([-3260.0, 1510.0], [-3840.0, 1510.0], true));
-        
+
+        terrain.addEdge(new Edge([3840.0, 986.0], [3282.0, 986.0], true));
+        terrain.addEdge(new Edge([3282.0, 986.0], [3282.0, -1844.0], false));
+        terrain.addEdge(new Edge([3282.0, -1844.0], [1906.0, -1844.0], true));
+        terrain.addEdge(new Edge([1906.0, -1844.0], [1554.0 - 11.0, -2036.0 - 6.0], true)); // slide
+        terrain.addEdge(new Edge([1554.0, -2036.0], [888.0, -2036.0], true));
+        terrain.addEdge(new Edge([888.0, -2036.0], [888.0, -2560.0], false));
+
+        terrain.addEdge(new Edge([780.0, -2560.0], [780.0, -1844.0], false));
+        terrain.addEdge(new Edge([780.0, -1844.0], [32.0, -1844.0], true));
+        terrain.addEdge(new Edge([32.0, -1844.0], [32.0, -2560], false));
+
+        terrain.addEdge(new Edge([-68.0, -2560.0], [-68.0, -1844.0], false));
+        terrain.addEdge(new Edge([-68.0, -1844.0], [-878.0, -1844.0], true));
+        terrain.addEdge(new Edge([-878.0, -1844.0], [-878.0, -2560.0], false));
 
         this.gl = gl;
         this.programInfo = programInfo;
@@ -123,9 +137,9 @@ class Main
         this.keypressed_jump = false;
         this.start_jump = 0.0;
         this.max_jump_duration = 0.35;
-        this.jump_speed = 675.0;
+        this.jump_speed = 900.0;
 
-        this.gravity = -1200.0;
+        this.gravity = -2100.0;
         this.player_walk_speed = 500.0;
 
         requestAnimationFrame(this.render.bind(this));
