@@ -1,3 +1,4 @@
+// This is the main class, index.html calls its constructor when start.
 class Main
 {
     constructor ()
