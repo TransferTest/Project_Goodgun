@@ -26,9 +26,8 @@ class RenderObject
         this.buffers = this.initBuffers(gl);
     }
 
-    initBuffers()
+    initBuffers(gl)
     {
-        const gl = this.gl;
 
         const positions = this.positions;
 
