@@ -73,6 +73,10 @@ class Spine
         {
             this.childs[i].removeParent();
         }
+        if (this.parent === null)
+        {
+            return;
+        }
         this.parent.removeChild(this.id);
     }
 }

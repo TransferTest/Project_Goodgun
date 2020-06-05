@@ -14,9 +14,17 @@ class Ragdoll
         this.spine_id_bitmap = bitmap.create(MAX_SPINE_SIZE, true);
         this.vertex_id_bitmap = bitmap.create(MAX_VERTEX_SIZE, true);
     }
+    addFace (ids)
+    {
+        this.faces.push(...ids);
+    }
     addSpine()
     {
         const newId = bitmap.pickAndSet(this.spine_id_bitmap);
+        if (newId < 0)
+        {
+            return newId;
+        }
         const newSpine = new Spine(newId);
 
         this.spines.push(newSpine);
@@ -35,9 +43,32 @@ class Ragdoll
         }
         return null;
     }
+    removeSpine(id)
+    {
+        for (let i = 0; i < this.spines.length; i++)
+        {
+            const target = this.spines[i];
+            if (target.compareId(id))
+            {
+                this.spines.splice(i, 1);
+                target.remove();
+                return;
+            }
+        }
+    }
+    setSpineParent(childId, parentId)
+    {
+        const child = this.findSpine(childId);
+        const parent = this.findSpine(parentId);
+        child.setParent(parent);
+    }
     addVertex()
     {
         const newId = bitmap.pickAndSet(this.vertex_id_bitmap);
+        if (newId < 0)
+        {
+            return newId;
+        }
         const newVertex = new AnimationVertex(newId);
 
         this.vertices.push(newVertex);
@@ -55,6 +86,42 @@ class Ragdoll
             }
         }
         return null;
+    }
+    removeVertex(id)
+    {
+        for (let i = 0; i < this.vertices.length; i++)
+        {
+            const v = this.vertices[i];
+            if (v.compareId(id))
+            {
+                this.vertices.splice(i, 1);
+                return v;
+            }
+        }
+    }
+    getPositions ()
+    {
+        const vertices = this.vertices;
+        const ret = [];
+
+        for (let i = 0; i < vertices.length; i++)
+        {
+            const v = vertices[i];
+            ret.push(...v.getPosition());
+        }
+        return ret;
+    }
+    getTextureCoordinates ()
+    {
+        const vertices = this.vertices;
+        const ret = [];
+
+        for (let i = 0; i < vertices.length; i++)
+        {
+            const v = vertices[i];
+            ret.push(...v.getTextureCoordinate());
+        }
+        return ret;
     }
 
     initBuffers(gl)
