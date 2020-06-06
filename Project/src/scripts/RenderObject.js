@@ -3,6 +3,8 @@ class RenderObject
     constructor (gl, programInfo)
     {
         this.gl = gl;
+        this.programInfo = programInfo;
+        this.texture = null;
         this.positions = [
             -1.0, -1.0,
             1.0, -1.0,
@@ -19,14 +21,11 @@ class RenderObject
             0, 1, 2,
             1, 2, 3,
         ];
-        this.programInfo = programInfo;
-        this.texture = null;
         this.buffers = this.initBuffers(gl);
     }
 
     initBuffers(gl)
     {
-
         const positions = this.positions;
 
         const positionBuffer = gl.createBuffer();

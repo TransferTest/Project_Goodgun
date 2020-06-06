@@ -68,8 +68,7 @@ class GameObject
     setRagdollUrl(gl, programInfo, url)
     {
         const rnd = new Ragdoll(gl, programInfo);
-        const texture = RenderObject.loadTexture(gl, url);
-        rnd.bindTexture(texture);
+        rnd.setTexture(gl, url);
         this.renderobj = rnd;
     }
 

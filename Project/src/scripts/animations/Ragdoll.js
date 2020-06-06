@@ -1,18 +1,22 @@
-class Ragdoll extends RenderObject
+class Ragdoll
 {
     constructor (gl, programInfo)
     {
-        super(gl, programInfo);
-        this.positions = [];
-        this.texcoord = [];
-        this.indices = [];
+        this.gl = gl;
+        this.programInfo = programInfo;
+
         const MAX_SPINE_SIZE = 128;
         const MAX_VERTEX_SIZE = 512;
         this.texture = null;
+        this.positions = [];
+        this.texcoord = [];
+        this.indices = [];
         this.vertices = [];
         this.spines = [];
+        this.root_spine = null;
         this.faces = []
-        this.rebuildBuffers();
+        console.log("here!");
+        this.buffers = this.initBuffers(gl);
 
         this.spine_id_bitmap = bitmap.create(MAX_SPINE_SIZE, true);
         this.vertex_id_bitmap = bitmap.create(MAX_VERTEX_SIZE, true);
@@ -44,6 +48,10 @@ class Ragdoll extends RenderObject
         const newSpine = new Spine(newId);
 
         this.spines.push(newSpine);
+        if (this.root_spine === null)
+        {
+            this.root_spine = newSpine;
+        }
 
         return newId;
     }
@@ -165,6 +173,139 @@ class Ragdoll extends RenderObject
     {
         console.log("rebuilding buffers");
         this.buffers = this.initBuffers(this.gl);
+    }
+
+    initBuffers(gl)
+    {
+        console.log(this.indices);
+        const positions = this.positions;
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        const textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+        const textureCoordinates = this.texcoord;
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        const ind = this.indices;
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ind), gl.STATIC_DRAW);
+
+        return {
+            position: positionBuffer,
+            textureCoord: textureCoordBuffer,
+            indices: indexBuffer,
+        };
+    }
+    updateBuffers ()
+    {
+        const gl = this.gl;
+        const positions = this.positions;
+        const textureCoordinates = this.texcoord;
+        const indices = this.indices;
+        const buffers = this.buffers;
+        const positionBuffer = buffers.position;
+        const textureCoordBuffer = buffers.textureCoord;
+        const indexBuffer = buffers.indices;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    }
+
+    render (transform, scale, rotation)
+    {
+        if (this.texture === null)
+        {
+            console.log("No texture!!!");
+            return;
+        }
+        this.updateBuffers();
+        const gl = this.gl;
+        const programInfo = this.programInfo;
+        const buffers = this.buffers;
+        const texture = this.texture;
+        
+
+        const transformVector = transform;
+        const scaleMatrix = mat4.createScale(scale);
+        const rotationMatrix = mat4.createRotation(rotation);
+
+        {
+            const numComponents = 2;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.vertexPosition,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+        }
+
+        {
+            const numComponents = 2;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.textureCoord,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
+        }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+
+        gl.useProgram(programInfo.program);
+
+        gl.uniform4fv(
+            programInfo.uniformLocations.transformVector,
+            transformVector
+        );
+        gl.uniformMatrix4fv(
+            programInfo.uniformLocations.scaleMatrix,
+            false,
+            scaleMatrix
+        );
+        gl.uniformMatrix4fv(
+            programInfo.uniformLocations.rotationMatrix,
+            false,
+            rotationMatrix
+        );
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+
+        {
+            const vertexCount = 6;
+            const type = gl.UNSIGNED_SHORT;
+            const offset = 0;
+            gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+        }
     }
 
     setTexture (gl, url)

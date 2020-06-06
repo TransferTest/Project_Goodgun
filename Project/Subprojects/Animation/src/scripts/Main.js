@@ -81,7 +81,16 @@ class Main
         cam.setFollow(player);
 
         const ragdoll = player.getRenderObject();
+        this.functionA(ragdoll);
+        this.functionB(ragdoll);
+        
 
+        this.layers = layers;
+        requestAnimationFrame(this.render.bind(this));
+    }
+    //initiallize vertices of sample ragdoll
+    functionA(ragdoll)
+    {
         const v1 = ragdoll.addVertex();
         ragdoll.setVertexPosition(v1, [-1.0, -1.0]);
         ragdoll.setVertexTextureCoordinates(v1, [0.0, 1.0]);
@@ -100,11 +109,21 @@ class Main
 
         ragdoll.addFace([v1, v2, v3]);
         ragdoll.addFace([v2, v3, v4]);
-
+        
         ragdoll.rebuildBuffers();
+    }
+    //initiallize spines of sample ragdoll
+    functionB(ragdoll)
+    {
+        const s1 = ragdoll.addSpine();
 
-        this.layers = layers;
-        requestAnimationFrame(this.render.bind(this));
+        const s2 = ragdoll.addSpine();
+        ragdoll.setSpineParent(s2, s1);
+    }
+    //animate sample ragdoll
+    functionC(ragdoll, dt)
+    {
+
     }
 
     render(now)
