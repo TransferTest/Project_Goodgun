@@ -68,8 +68,42 @@ class Main
 
         this.gl = gl;
 
-        this.layers = [];
+        const layers = [];
+        const layer_00 = new Layer();
+        layer_00.setDepth(1.0);
+        layers.push(layer_00);
+        
+        const player = new Transform();
+        player.setRagdollUrl(gl, programInfo, 'src/textures/yee.png');
+        player.setScale([40.0, 60.0, 1.0, 1.0]);
+        player.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
+        layer_00.addObject(player);
+        cam.setFollow(player);
 
+        const ragdoll = player.getRenderObject();
+
+        const v1 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v1, [-1.0, -1.0]);
+        ragdoll.setVertexTextureCoordinates(v1, [0.0, 1.0]);
+
+        const v2 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v2, [1.0, -1.0]);
+        ragdoll.setVertexTextureCoordinates(v2, [1.0, 1.0]);
+
+        const v3 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v3, [-1.0, 1.0]);
+        ragdoll.setVertexTextureCoordinates(v3, [0.0, 0.0]);
+
+        const v4 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v4, [1.0, 1.0]);
+        ragdoll.setVertexTextureCoordinates(v4, [1.0, 0.0]);
+
+        ragdoll.addFace([v1, v2, v3]);
+        ragdoll.addFace([v2, v3, v4]);
+
+        ragdoll.rebuildBuffers();
+
+        this.layers = layers;
         requestAnimationFrame(this.render.bind(this));
     }
 

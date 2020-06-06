@@ -1,22 +1,38 @@
-class Ragdoll
+class Ragdoll extends RenderObject
 {
-    constructor (gl)
+    constructor (gl, programInfo)
     {
+        super(gl, programInfo);
+        this.positions = [];
+        this.texcoord = [];
+        this.indices = [];
         const MAX_SPINE_SIZE = 128;
         const MAX_VERTEX_SIZE = 512;
         this.texture = null;
         this.vertices = [];
         this.spines = [];
         this.faces = []
-        this.buffer = this.initBuffers(gl);
-        this.gl = gl;
+        this.rebuildBuffers();
 
         this.spine_id_bitmap = bitmap.create(MAX_SPINE_SIZE, true);
         this.vertex_id_bitmap = bitmap.create(MAX_VERTEX_SIZE, true);
+        this.vertex_table = this.initVTable(MAX_VERTEX_SIZE);
+    }
+    initVTable(n)
+    {
+        const ret = [];
+        for (let i = 0; i < n; i++)
+        {
+            ret.push(-1);
+        }
+        return ret;
     }
     addFace (ids)
     {
         this.faces.push(...ids);
+        this.indices.push(this.vertex_table[ids[0]]);
+        this.indices.push(this.vertex_table[ids[1]]);
+        this.indices.push(this.vertex_table[ids[2]]);
     }
     addSpine()
     {
@@ -62,6 +78,10 @@ class Ragdoll
         const parent = this.findSpine(parentId);
         child.setParent(parent);
     }
+    getNextVertexPositionOffset ()
+    {
+        return this.positions.length;
+    }
     addVertex()
     {
         const newId = bitmap.pickAndSet(this.vertex_id_bitmap);
@@ -69,15 +89,21 @@ class Ragdoll
         {
             return newId;
         }
-        const newVertex = new AnimationVertex(newId);
+        const newVertex = new AnimationVertex(newId, this.getNextVertexPositionOffset(), this.getNextVertexPositionOffset(), this.positions, this.texcoord);
+        this.positions.push(0.0);
+        this.positions.push(0.0);
+        this.texcoord.push(0.0);
+        this.texcoord.push(0.0);
 
         this.vertices.push(newVertex);
+        this.vertex_table[newId] = this.vertices.length - 1;
+        
 
         return newId;
     }
     findVertex(id)
     {
-        for (let i = 0; i < this.vertices.length; i++)
+        /*for (let i = 0; i < this.vertices.length; i++)
         {
             const v = this.vertices[i];
             if (v.compareId(id))
@@ -85,7 +111,8 @@ class Ragdoll
                 return v;
             }
         }
-        return null;
+        return null;*/
+        return this.vertices[this.vertex_table[id]];
     }
     removeVertex(id)
     {
@@ -98,6 +125,16 @@ class Ragdoll
                 return v;
             }
         }
+    }
+    setVertexPosition(id, pos)
+    {
+        const target = this.findVertex(id);
+        target.setPosition(pos);
+    }
+    setVertexTextureCoordinates(id, texcoord)
+    {
+        const target = this.findVertex(id);
+        target.setTextureCoordinates(texcoord);
     }
     getPositions ()
     {
@@ -124,29 +161,10 @@ class Ragdoll
         return ret;
     }
 
-    initBuffers(gl)
+    rebuildBuffers()
     {
-        const positions = this.positions;
-
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-        const textureCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-        const textureCoordinates = this.texcoord;
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
-
-        const indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        const ind = this.indices;
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ind), gl.STATIC_DRAW);
-
-        return {
-            position: positionBuffer,
-            textureCoord: textureCoordBuffer,
-            indices: indexBuffer,
-        };
+        console.log("rebuilding buffers");
+        this.buffers = this.initBuffers(this.gl);
     }
 
     setTexture (gl, url)

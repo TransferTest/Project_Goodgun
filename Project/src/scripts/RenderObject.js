@@ -3,8 +3,6 @@ class RenderObject
     constructor (gl, programInfo)
     {
         this.gl = gl;
-        this.vertexNum = 0;
-        this.faceNum = 0;
         this.positions = [
             -1.0, -1.0,
             1.0, -1.0,
@@ -68,8 +66,8 @@ class RenderObject
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-        //gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     }
 
     render (transform, scale, rotation)
@@ -157,31 +155,6 @@ class RenderObject
             const offset = 0;
             gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
         }
-    }
-
-    addVertex (vPos, tCoord)
-    {
-        if (vPos.length != tCoord.length)
-        {
-            console.log("Error : position mismatch");
-            return -1;
-        }
-        if (vPos.length % 2 != 0)
-        {
-            console.log("Error : dimension mismatch");
-            return -2;
-        }
-
-        let i = 0;
-        for (; i < vPos.length; i++)
-        {
-            this.positions.push(vPos[i]);
-            this.texcoord.push(tCoord[i]);
-        }
-
-        this.vertexNum += vPos.length / 2;
-
-        return this.vertexnum;
     }
 
     static loadTexture (gl, url)

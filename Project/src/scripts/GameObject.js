@@ -64,6 +64,19 @@ class GameObject
         rnd.bindTexture(texture);
         this.renderobj = rnd;
     }
+
+    setRagdollUrl(gl, programInfo, url)
+    {
+        const rnd = new Ragdoll(gl, programInfo);
+        const texture = RenderObject.loadTexture(gl, url);
+        rnd.bindTexture(texture);
+        this.renderobj = rnd;
+    }
+
+    getRenderObject()
+    {
+        return this.renderobj;
+    }
     render (cam, transform, scale, rotation, depth)
     {
         const d = depth + this.depth;
