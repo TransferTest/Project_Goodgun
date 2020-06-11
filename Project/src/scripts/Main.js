@@ -24,7 +24,7 @@ class Main
             uniform sampler2D uSampler;
 
             void main() {
-                gl_FragColor = vec4(texture2D(uSampler, vTextureCoord).rgb, texture2D(uSampler, vTextureCoord).a);
+                gl_FragColor = texture2D(uSampler, vTextureCoord).rgba;
             }
         `;
 
@@ -57,6 +57,7 @@ class Main
         cam.setScreenWidth(canvas.width);
         cam.setScreenHeight(canvas.height);
         cam.setSkyBox('src/textures/skybox.png');
+        cam.setFlash('src/textures/flash.png');
         cam.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
         cam.setBound([-2480.0, 2480.0, -1520.0, 1260.0]);
         this.cam = cam;
@@ -208,6 +209,7 @@ class Main
         {
             this.layers[i].render(this.cam);
         }
+        this.cam.renderFlash();
     }
 
     initShaderProgram(gl, vsSource, fsSource) {

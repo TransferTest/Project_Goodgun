@@ -10,6 +10,7 @@ class Camera
         this.rotation = 0.0;
         this.depth = 1.0;
         this.skybox = null;
+        this.flash = null;
         this.follow = null;
 
         this.bound_left = 0.0;
@@ -84,6 +85,13 @@ class Camera
         sky.bindTexture(texture);
         this.skybox = sky;
     }
+    setFlash (url)
+    {
+        const flash = new RenderObject(this.gl, this.programInfo);
+        const texture = RenderObject.loadTexture(this.gl, url);
+        flash.bindTexture(texture);
+        this.flash = flash;
+    }
     renderLayer(layer)
     {
         layer.render(cam);
@@ -94,7 +102,22 @@ class Camera
     }
     renderSky()
     {
+        if (this.skybox === null)
+        {
+            return;
+        }
         this.render(this.skybox);
+    }
+    renderFlash()
+    {
+        if (this.flash === null)
+        {
+            return;
+        }
+        const gl = this.gl;
+        gl.blendFunc(gl.ZERO, gl.SRC_COLOR);
+        this.render(this.flash);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
     setFollow(obj)
     {
