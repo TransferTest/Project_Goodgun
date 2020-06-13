@@ -62,4 +62,13 @@ class vec4
         }
         return ret;
     }
+    static copy(v)
+    {
+        const ret = [];
+        for (let i = 0; i < v.length; i++)
+        {
+            ret.push(v[i]);
+        }
+        return ret;
+    }
 }

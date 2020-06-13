@@ -7,6 +7,7 @@ class AnimationVertex
         this.texcoord = texcoord;
         this.pos_offset = pos_offset;
         this.positions = positions;
+        this.a_position = vec2.createZero();
     }
 
     getId()
@@ -52,5 +53,13 @@ class AnimationVertex
         ret[1] = this.positions[this.pos_offset + 1];
 
         return ret;
+    }
+    setAPosition(newAPos)
+    {
+        this.a_position = vec2.copy(newAPos);
+    }
+    getAPosition()
+    {
+        return this.a_position;
     }
 }

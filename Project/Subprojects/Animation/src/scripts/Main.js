@@ -80,17 +80,21 @@ class Main
         layer_00.addObject(player);
         cam.setFollow(player);
 
+        this.player = player;
+
         const ragdoll = player.getRenderObject();
         this.functionA(ragdoll);
-        this.functionB(ragdoll);
-        
 
         this.layers = layers;
+
+        this.then = 0.0;
         requestAnimationFrame(this.render.bind(this));
     }
-    //initiallize vertices of sample ragdoll
+    //initiallize vertices and spines of the sample ragdoll
     functionA(ragdoll)
     {
+        console.log("functionA called");
+        //add vertices
         const v1 = ragdoll.addVertex();
         ragdoll.setVertexPosition(v1, [-1.0, -1.0]);
         ragdoll.setVertexTextureCoordinates(v1, [0.0, 1.0]);
@@ -100,30 +104,69 @@ class Main
         ragdoll.setVertexTextureCoordinates(v2, [1.0, 1.0]);
 
         const v3 = ragdoll.addVertex();
-        ragdoll.setVertexPosition(v3, [-1.0, 1.0]);
-        ragdoll.setVertexTextureCoordinates(v3, [0.0, 0.0]);
+        ragdoll.setVertexPosition(v3, [-1.0, 0.0]);
+        ragdoll.setVertexTextureCoordinates(v3, [0.0, 0.5]);
 
         const v4 = ragdoll.addVertex();
-        ragdoll.setVertexPosition(v4, [1.0, 1.0]);
-        ragdoll.setVertexTextureCoordinates(v4, [1.0, 0.0]);
+        ragdoll.setVertexPosition(v4, [1.0, 0.0]);
+        ragdoll.setVertexTextureCoordinates(v4, [1.0, 0.5]);
 
-        ragdoll.addFace([v1, v2, v3]);
-        ragdoll.addFace([v2, v3, v4]);
+        const v5 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v5, [-1.0, 1.0]);
+        ragdoll.setVertexTextureCoordinates(v5, [0.0, 0.0]);
+
+        const v6 = ragdoll.addVertex();
+        ragdoll.setVertexPosition(v6, [1.0, 1.0]);
+        ragdoll.setVertexTextureCoordinates(v6, [1.0, 0.0]);
+
+        //add faces
+        ragdoll.addFace([v1, v2, v4]);
+        ragdoll.addFace([v1, v3, v4]);
+        ragdoll.addFace([v3, v4, v6]);
+        ragdoll.addFace([v3, v5, v6]);
         
         ragdoll.rebuildBuffers();
-    }
-    //initiallize spines of sample ragdoll
-    functionB(ragdoll)
-    {
-        const s1 = ragdoll.addSpine();
 
+        //init spines
+        const s1 = ragdoll.addSpine();
         const s2 = ragdoll.addSpine();
+
         ragdoll.setSpineParent(s2, s1);
+
+        const spine_1 = ragdoll.findSpine(s1);
+        const spine_2 = ragdoll.findSpine(s2);
+
+        spine_1.setRootPosition([0.0, -1.0]);
+        spine_2.setRootPosition([0.0, 0.0]);
+
+        spine_1.initJointTransform();
+        spine_2.initJointTransform();
+
+        //init weight table
+        const table = ragdoll.getWeightTable();
+        table.setAt(v1, s1, 1.0);
+        table.setAt(v2, s1, 1.0);
+        table.setAt(v3, s1, 0.5);
+        table.setAt(v4, s1, 0.5);
+        table.setAt(v5, s1, 0.0);
+        table.setAt(v6, s1, 0.0);
+        table.setAt(v1, s2, 0.0);
+        table.setAt(v2, s2, 0.0);
+        table.setAt(v3, s2, 0.5);
+        table.setAt(v4, s2, 0.5);
+        table.setAt(v5, s2, 1.0);
+        table.setAt(v6, s2, 1.0);
     }
     //animate sample ragdoll
-    functionC(ragdoll, dt)
+    functionB(ragdoll, dt)
     {
+        const s1 = ragdoll.findSpine(0);
+        const s2 = ragdoll.findSpine(1);
 
+        const previous_rotation = s2.getJointRotation();
+        s2.setJointRotation(previous_rotation + 3.14 * dt / 4);
+
+        s1.propagate();
     }
 
     render(now)
@@ -152,6 +195,7 @@ class Main
         {
             
         }
+        this.functionB(this.player.getRenderObject(), deltaTime);
         this.drawScene(this.gl);
 
         requestAnimationFrame(this.render.bind(this));

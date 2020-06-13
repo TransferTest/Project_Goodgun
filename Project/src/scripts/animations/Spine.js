@@ -6,7 +6,10 @@ class Spine
         this.childs = [];
         this.id = n;
         this.transform = vec2.createZero();
-        this.ratation = 0.0;
+        this.rotation = 0.0;
+        this.joint_transform = vec2.createZero();
+        this.joint_rotation = 0.0;
+        this.a_pose_root_position = vec2.createZero();
     }
     compareId(id)
     {
@@ -16,6 +19,23 @@ class Spine
     {
         this.parent = parent;
     }
+    setRootPosition(pos)
+    {
+        this.a_pose_root_position = pos;
+    }
+    getRootPosition()
+    {
+        return this.a_pose_root_position;
+    }
+    initJointTransform()
+    {
+        if (this.parent === null)
+        {
+            this.joint_transform = vec2.copy(this.a_pose_root_position);
+            return;
+        }
+        this.joint_transform = vec2.sub(this.getRootPosition(), this.parent.getRootPosition());
+    }
     setTransform(transform)
     {
         this.transform = transform;
@@ -24,6 +44,10 @@ class Spine
     {
         return this.transform;
     }
+    getJointTransform()
+    {
+        return this.joint_transform;
+    }
     setRotation(rotation)
     {
         this.rotation = rotation;
@@ -31,6 +55,14 @@ class Spine
     getRotation()
     {
         return this.rotation;
+    }
+    setJointRotation(rotation)
+    {
+        this.joint_rotation = rotation;
+    }
+    getJointRotation()
+    {
+        return this.joint_rotation;
     }
 
     getRotationMatrix()
@@ -78,5 +110,21 @@ class Spine
             return;
         }
         this.parent.removeChild(this.id);
+    }
+    propagate()
+    {
+        this.propagate_iter(vec2.createZero(), 0.0);
+    }
+    propagate_iter(parent_transform, parent_rotation)
+    {
+        const rotation_matrix = mat2.createRotation(parent_rotation);
+
+        this.setRotation(parent_rotation + this.getJointRotation());
+        this.setTransform(vec2.add(parent_transform, vec2.mmul(rotation_matrix, this.getJointTransform())));
+
+        for (let i = 0; i < this.childs.length; i++)
+        {
+            this.childs[i].propagate_iter(this.getTransform(), this.getRotation());
+        }
     }
 }

@@ -15,12 +15,22 @@ class Ragdoll
         this.spines = [];
         this.root_spine = null;
         this.faces = []
-        console.log("here!");
         this.buffers = this.initBuffers(gl);
 
         this.spine_id_bitmap = bitmap.create(MAX_SPINE_SIZE, true);
         this.vertex_id_bitmap = bitmap.create(MAX_VERTEX_SIZE, true);
         this.vertex_table = this.initVTable(MAX_VERTEX_SIZE);
+
+        const weight_table = new table(MAX_VERTEX_SIZE, MAX_SPINE_SIZE, 0.0);
+        this.weight_table = weight_table;
+    }
+    updateVertexPositions()
+    {
+        
+    }
+    getWeightTable()
+    {
+        return this.weight_table;
     }
     initVTable(n)
     {
@@ -301,7 +311,7 @@ class Ragdoll
         gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
 
         {
-            const vertexCount = 6;
+            const vertexCount = this.indices.length;
             const type = gl.UNSIGNED_SHORT;
             const offset = 0;
             gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
