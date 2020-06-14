@@ -18,6 +18,16 @@ class vec2
         ret[1] = v1[1] - v2[1];
         return ret;
     }
+    static smul(a, s)
+    {
+        const ret = [];
+        var len = a.length;
+        for (let i = 0; i < len; i++)
+        {
+            ret.push(a[i] * s);
+        }
+        return ret;
+    }
     static mmul(M, v)
     {
         const ret = [];

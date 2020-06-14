@@ -13,6 +13,14 @@ class table
         this.num_columns = num_columns;
         this.table = table;
     }
+    getColumnNumber()
+    {
+        return this.num_columns;
+    }
+    getRowNumber()
+    {
+        return this.num_rows;
+    }
     getAt(row, col)
     {
         return this.table[row * this.num_columns + col];

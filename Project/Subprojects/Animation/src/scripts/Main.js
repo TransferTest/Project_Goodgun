@@ -75,7 +75,7 @@ class Main
         
         const player = new Transform();
         player.setRagdollUrl(gl, programInfo, 'src/textures/yee.png');
-        player.setScale([40.0, 60.0, 1.0, 1.0]);
+        player.setScale([60.0, 60.0, 1.0, 1.0]);
         player.setPosition([-2480.0, -1260.0, 0.0, 0.0]);
         layer_00.addObject(player);
         cam.setFollow(player);
@@ -88,6 +88,9 @@ class Main
         this.layers = layers;
 
         this.then = 0.0;
+
+        window.addEventListener('keydown', this.keyDownHandler.bind(this), false);
+        window.addEventListener('keyup', this.keyUpHandler.bind(this), false);
         requestAnimationFrame(this.render.bind(this));
     }
     //initiallize vertices and spines of the sample ragdoll
@@ -164,9 +167,20 @@ class Main
         const s2 = ragdoll.findSpine(1);
 
         const previous_rotation = s2.getJointRotation();
-        s2.setJointRotation(previous_rotation + 3.14 * dt / 4);
-
+        if (this.keypressed_right && (!this.keypressed_left))
+        {
+            s2.setJointRotation(previous_rotation - 3.14 * dt / 4);
+        }
+        else if (this.keypressed_left && (!this.keypressed_right))
+        {
+            s2.setJointRotation(previous_rotation + 3.14 * dt / 4);
+        }
+        else
+        {
+            s2.setJointRotation(previous_rotation);
+        }
         s1.propagate();
+        ragdoll.updateVertexPositions();
     }
 
     render(now)

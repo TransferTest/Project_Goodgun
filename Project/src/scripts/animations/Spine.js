@@ -19,6 +19,10 @@ class Spine
     {
         this.parent = parent;
     }
+    addChild(child)
+    {
+        this.childs.push(child);
+    }
     setRootPosition(pos)
     {
         this.a_pose_root_position = pos;
@@ -110,6 +114,10 @@ class Spine
             return;
         }
         this.parent.removeChild(this.id);
+    }
+    getLocalTranslation(vertex_a_position)
+    {
+        return vec2.sub(vertex_a_position, this.a_pose_root_position);
     }
     propagate()
     {

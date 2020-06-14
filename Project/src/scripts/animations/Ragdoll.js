@@ -1,5 +1,12 @@
+/*
+ * A animating ragdoll system
+ */
+
 class Ragdoll
 {
+    /*
+     * webgl context and shader program information
+     */
     constructor (gl, programInfo)
     {
         this.gl = gl;
@@ -24,14 +31,17 @@ class Ragdoll
         const weight_table = new table(MAX_VERTEX_SIZE, MAX_SPINE_SIZE, 0.0);
         this.weight_table = weight_table;
     }
-    updateVertexPositions()
-    {
-        
-    }
+    /*
+     * returns its weight table
+     * weight table's dimension is fixed
+     */
     getWeightTable()
     {
         return this.weight_table;
     }
+    /*
+     * private function for initiallizing vertex-vertexId table
+     */
     initVTable(n)
     {
         const ret = [];
@@ -41,6 +51,11 @@ class Ragdoll
         }
         return ret;
     }
+    /*
+     * adds a face and pushes it to indices array
+     * input value should contain three vertex ids
+     * [v1, v2, v3]
+     */
     addFace (ids)
     {
         this.faces.push(...ids);
@@ -48,6 +63,10 @@ class Ragdoll
         this.indices.push(this.vertex_table[ids[1]]);
         this.indices.push(this.vertex_table[ids[2]]);
     }
+    /*
+     * Adds a spine without initiallization
+     * If there is no root spine, new spine becomes the root spine
+     */
     addSpine()
     {
         const newId = bitmap.pickAndSet(this.spine_id_bitmap);
@@ -65,6 +84,9 @@ class Ragdoll
 
         return newId;
     }
+    /*
+     * Find and returns a spine with its id
+     */
     findSpine(id)
     {
         for (let i = 0; i < this.spines.length; i++)
@@ -77,6 +99,10 @@ class Ragdoll
         }
         return null;
     }
+    /*
+     * Find and remove a spine with its id
+     * Not fully implemented
+     */
     removeSpine(id)
     {
         for (let i = 0; i < this.spines.length; i++)
@@ -90,16 +116,26 @@ class Ragdoll
             }
         }
     }
+    /*
+     * Sets parent and child relation
+     */
     setSpineParent(childId, parentId)
     {
         const child = this.findSpine(childId);
         const parent = this.findSpine(parentId);
         child.setParent(parent);
+        parent.addChild(child);
     }
+    /*
+     * Private function for adding a new vertex
+     */
     getNextVertexPositionOffset ()
     {
         return this.positions.length;
     }
+    /*
+     * Add a new vertex without initiallization
+     */
     addVertex()
     {
         const newId = bitmap.pickAndSet(this.vertex_id_bitmap);
@@ -119,19 +155,17 @@ class Ragdoll
 
         return newId;
     }
+    /**
+     * Find and return a vertex with its id
+     */
     findVertex(id)
     {
-        /*for (let i = 0; i < this.vertices.length; i++)
-        {
-            const v = this.vertices[i];
-            if (v.compareId(id))
-            {
-                return v;
-            }
-        }
-        return null;*/
         return this.vertices[this.vertex_table[id]];
     }
+    /**
+     * Remove a vertex
+     * Not fully implemented
+     */
     removeVertex(id)
     {
         for (let i = 0; i < this.vertices.length; i++)
@@ -144,17 +178,23 @@ class Ragdoll
             }
         }
     }
+    /**
+     * Sets a vertex's A-pose position
+     */
     setVertexPosition(id, pos)
     {
         const target = this.findVertex(id);
-        target.setPosition(pos);
+        target.setAPosition(pos);
     }
+    /**
+     * Sets a vertex's corresponding texture coordinate
+     */
     setVertexTextureCoordinates(id, texcoord)
     {
         const target = this.findVertex(id);
         target.setTextureCoordinates(texcoord);
     }
-    getPositions ()
+    /*getPositions ()
     {
         const vertices = this.vertices;
         const ret = [];
@@ -177,17 +217,29 @@ class Ragdoll
             ret.push(...v.getTextureCoordinate());
         }
         return ret;
-    }
+    }*/
 
+    /**
+     * Propagate and update spines' transform starting from the root spine
+     */
+    updateSpineTransform()
+    {
+        this.root_spine.propagate();
+    }
+    /**
+     * Create and initiallize new buffers with its current state
+     * Call it when vertex number is changed
+     */
     rebuildBuffers()
     {
         console.log("rebuilding buffers");
         this.buffers = this.initBuffers(this.gl);
     }
-
+    /**
+     * Create and initiallize buffers for given wegl context
+     */
     initBuffers(gl)
     {
-        console.log(this.indices);
         const positions = this.positions;
 
         const positionBuffer = gl.createBuffer();
@@ -210,6 +262,9 @@ class Ragdoll
             indices: indexBuffer,
         };
     }
+    /**
+     * Update buffer data with its current state
+     */
     updateBuffers ()
     {
         const gl = this.gl;
@@ -230,7 +285,9 @@ class Ragdoll
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     }
-
+    /**
+     * Render with given transform
+     */
     render (transform, scale, rotation)
     {
         if (this.texture === null)
@@ -318,6 +375,19 @@ class Ragdoll
         }
     }
 
+    /**
+     * Calculate and update all vertices' current position with current spine transform
+     */
+    updateVertexPositions()
+    {
+        for (let i = 0; i < this.vertices.length; i++)
+        {
+            this.vertices[i].calculatePosition(this, this.getWeightTable());
+        }
+    }
+    /**
+     * Set its texture with given url
+     */
     setTexture (gl, url)
     {
         console.log("load function called with : " + url);
