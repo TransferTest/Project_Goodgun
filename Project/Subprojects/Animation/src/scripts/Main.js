@@ -179,7 +179,7 @@ class Main
         {
             s2.setJointRotation(previous_rotation);
         }
-        s1.propagate();
+        ragdoll.updateSpineTransform();
         ragdoll.updateVertexPositions();
     }
 
